@@ -1,0 +1,13 @@
+# AENIMUS Docker build exclusions v0.1.0
+.env
+.git
+.aenimus
+.venv
+data
+workspace
+terraform/.terraform
+terraform/*.tfstate*
+terraform/terraform.tfvars
+ansible/inventory.yml
+__pycache__
+*.pyc

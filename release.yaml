@@ -1,0 +1,23 @@
+# AENIMUS release manifest v0.1.0
+apiVersion: aenimus.io/v1alpha1
+kind: Release
+metadata:
+  name: local
+  version: 0.1.0
+spec:
+  studio:
+    replicas: 1
+    port: 8787
+  inference:
+    provider: ollama
+    model: llama3.2
+    embeddingModel: nomic-embed-text
+  memory:
+    engine: qdrant
+    persistent: true
+  discord:
+    enabled: false
+  safety:
+    requireApproval: true
+    authorizedRoot: /workspace
+

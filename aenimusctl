@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""AENIMUS release controller v0.1.0 — Helm-like lifecycle for local Compose releases."""
+import argparse, json, shutil, subprocess, sys
+from datetime import datetime, timezone
+from pathlib import Path
+import yaml
+
+ROOT=Path(__file__).resolve().parent
+STATE=ROOT/".aenimus"; HISTORY=STATE/"history"
+
+def manifest(path):
+    data=yaml.safe_load(Path(path).read_text())
+    if data.get("apiVersion")!="aenimus.io/v1alpha1" or data.get("kind")!="Release": raise SystemExit("Unsupported release manifest")
+    return data
+
+def compose(profile=None,*args):
+    cmd=["docker","compose","-f",str(ROOT/"docker-compose.yml")]
+    if profile: cmd += ["--profile",profile]
+    return subprocess.run(cmd+list(args),cwd=ROOT,check=False)
+
+def apply(path):
+    data=manifest(path); STATE.mkdir(exist_ok=True); HISTORY.mkdir(exist_ok=True)
+    if (STATE/"current.yaml").exists(): shutil.copy2(STATE/"current.yaml",HISTORY/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")+".yaml"))
+    shutil.copy2(path,STATE/"current.yaml")
+    profile="discord" if data["spec"].get("discord",{}).get("enabled") else None
+    result=compose(profile,"up","-d","--build","--remove-orphans")
+    if result.returncode: raise SystemExit(result.returncode)
+    print(f"release/{data['metadata']['name']} applied")
+
+def rollback():
+    versions=sorted(HISTORY.glob("*.yaml"))
+    if not versions: raise SystemExit("No release revision available")
+    apply(versions[-1])
+
+def main():
+    p=argparse.ArgumentParser(prog="aenimusctl",description="AENIMUS v0.1.0 release controller")
+    sub=p.add_subparsers(dest="cmd",required=True)
+    a=sub.add_parser("apply"); a.add_argument("-f","--file",default="release.yaml")
+    sub.add_parser("status"); l=sub.add_parser("logs"); l.add_argument("service",nargs="?"); sub.add_parser("rollback"); sub.add_parser("destroy")
+    args=p.parse_args()
+    if args.cmd=="apply": apply(args.file)
+    elif args.cmd=="status": compose(None,"ps")
+    elif args.cmd=="logs": compose(None,"logs","--tail","200",*( [args.service] if args.service else []))
+    elif args.cmd=="rollback": rollback()
+    elif args.cmd=="destroy":
+        if input("Stop this release? Volumes will be preserved [y/N] ").lower()=="y": compose(None,"down")
+
+if __name__=="__main__": main()
+

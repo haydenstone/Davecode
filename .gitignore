@@ -1,0 +1,14 @@
+# AENIMUS ignore rules v0.1.0
+.env
+.venv/
+.aenimus/
+data/
+workspace/*
+!workspace/.gitkeep
+__pycache__/
+.pytest_cache/
+*.pyc
+terraform/.terraform/
+terraform/*.tfstate*
+terraform/terraform.tfvars
+

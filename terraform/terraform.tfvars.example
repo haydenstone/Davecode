@@ -1,0 +1,6 @@
+# AENIMUS Terraform example v0.1.0
+release_name = "aenimus"
+docker_host = "ssh://deploy@elysium-405"
+workspace_path = "/opt/aenimus/workspace"
+studio_port = 8787
+enable_discord = false

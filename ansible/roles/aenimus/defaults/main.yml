@@ -1,0 +1,9 @@
+---
+# AENIMUS role defaults v0.1.0
+aenimus_version: "0.1.0"
+aenimus_user: aenimus
+aenimus_root: /opt/aenimus
+aenimus_source: "{{ playbook_dir }}/.."
+aenimus_enable_discord: false
+aenimus_bind_address: 127.0.0.1
+

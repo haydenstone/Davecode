@@ -1,0 +1,8 @@
+---
+# AENIMUS role handlers v0.1.0
+- name: Restart AENIMUS
+  ansible.builtin.command:
+    cmd: docker compose up -d --build
+    chdir: "{{ aenimus_root }}"
+  become_user: "{{ aenimus_user }}"
+

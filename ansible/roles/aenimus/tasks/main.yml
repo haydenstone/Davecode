@@ -1,0 +1,42 @@
+---
+# AENIMUS role tasks v0.1.0
+- name: Install container runtime
+  ansible.builtin.package:
+    name: [docker.io, docker-compose-plugin]
+    state: present
+- name: Create service account
+  ansible.builtin.user:
+    name: "{{ aenimus_user }}"
+    system: true
+    create_home: true
+    groups: docker
+    append: true
+- name: Create release directory
+  ansible.builtin.file:
+    path: "{{ aenimus_root }}"
+    state: directory
+    owner: "{{ aenimus_user }}"
+    group: "{{ aenimus_user }}"
+    mode: "0750"
+- name: Synchronize versioned release source
+  ansible.posix.synchronize:
+    src: "{{ aenimus_source }}/"
+    dest: "{{ aenimus_root }}/"
+    delete: false
+    rsync_opts: ["--exclude=.env", "--exclude=.aenimus", "--exclude=data"]
+- name: Install protected environment file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ aenimus_root }}/.env"
+    owner: "{{ aenimus_user }}"
+    group: "{{ aenimus_user }}"
+    mode: "0600"
+  no_log: true
+  notify: Restart AENIMUS
+- name: Apply AENIMUS release
+  ansible.builtin.command:
+    cmd: "./aenimusctl apply -f release.yaml"
+    chdir: "{{ aenimus_root }}"
+  become_user: "{{ aenimus_user }}"
+  changed_when: true
+

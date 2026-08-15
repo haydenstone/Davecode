@@ -1,0 +1,7 @@
+---
+# AENIMUS host playbook v0.1.0
+- name: Provision AENIMUS container host
+  hosts: aenimus_hosts
+  become: true
+  roles: [aenimus]
+

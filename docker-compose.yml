@@ -1,0 +1,50 @@
+# AENIMUS Compose stack v0.1.0
+services:
+  studio:
+    build: .
+    ports: ["127.0.0.1:8787:8787"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      AENIMUS_OLLAMA_URL: http://ollama:11434
+      AENIMUS_QDRANT_URL: http://qdrant:6333
+    volumes:
+      - aenimus-data:/data
+      - ./workspace:/workspace
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=64m"]
+    depends_on:
+      qdrant: {condition: service_started}
+      ollama: {condition: service_started}
+  ollama:
+    image: ollama/ollama:0.11.4
+    volumes: ["ollama-data:/root/.ollama"]
+    ports: ["127.0.0.1:11434:11434"]
+    security_opt: ["no-new-privileges:true"]
+  qdrant:
+    image: qdrant/qdrant:v1.15.1
+    volumes: ["qdrant-data:/qdrant/storage"]
+    ports: ["127.0.0.1:6333:6333"]
+    security_opt: ["no-new-privileges:true"]
+  discord:
+    build: .
+    command: ["python", "-m", "app.discord_bot"]
+    env_file:
+      - path: .env
+        required: false
+    environment: ["AENIMUS_API_URL=http://studio:8787/api"]
+    depends_on:
+      studio: {condition: service_started}
+    profiles: ["discord"]
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=32m"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+volumes:
+  aenimus-data:
+  ollama-data:
+  qdrant-data:
