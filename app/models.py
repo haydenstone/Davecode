@@ -1,4 +1,5 @@
 """AENIMUS API models v0.1.0."""
+
 from typing import Any, Literal
 from pydantic import BaseModel, Field
 
@@ -7,7 +8,7 @@ class Voice(BaseModel):
     enabled: bool = False
     engine: str = "browser"
     voice_id: str = "default"
-    rate: float = Field(1, ge=.5, le=2)
+    rate: float = Field(1, ge=0.5, le=2)
     pitch: float = Field(1, ge=0, le=2)
     style: str = "calm"
 
@@ -27,11 +28,13 @@ class Agent(BaseModel):
     mission: str = ""
     provider: str = "ollama"
     model: str = "llama3.2"
-    temperature: float = Field(.4, ge=0, le=2)
+    temperature: float = Field(0.4, ge=0, le=2)
     context_window: int = Field(8192, ge=512, le=1_000_000)
     tuning: dict[str, Any] = Field(default_factory=dict)
     tools: list[str] = Field(default_factory=lambda: ["read_file"])
-    permissions: dict[str, bool] = Field(default_factory=lambda: {"delegate": False, "write": False, "terminal": False})
+    permissions: dict[str, bool] = Field(
+        default_factory=lambda: {"delegate": False, "write": False, "terminal": False}
+    )
     memory: MemoryPolicy = Field(default_factory=MemoryPolicy)
     color: str = "#9bf00b"
     avatar: str = "AI"
@@ -50,6 +53,7 @@ class SessionCreate(BaseModel):
     title: str = "Untitled operation"
     agent_ids: list[str] = Field(default_factory=list)
     orchestration: Literal["direct", "pipeline", "swarm"] = "pipeline"
+
 
 class Swarm(BaseModel):
     id: str
@@ -81,6 +85,7 @@ class TerminalRequest(BaseModel):
     cwd: str = "."
     approval_id: str | None = None
 
+
 class DiagnosticRequest(BaseModel):
     path: str = "."
     mode: Literal["lint", "test", "debug"] = "lint"
@@ -88,6 +93,7 @@ class DiagnosticRequest(BaseModel):
 
 class ApprovalDecision(BaseModel):
     approved: bool
+
 
 class MaintenanceRequest(BaseModel):
     name: str | None = None

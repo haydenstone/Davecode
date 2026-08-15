@@ -38,7 +38,21 @@ docker compose exec ollama ollama pull llama3.2
 docker compose exec ollama ollama pull nomic-embed-text
 ```
 
-Open [http://127.0.0.1:8787](http://127.0.0.1:8787). The port is deliberately bound to loopback.
+Open [http://127.0.0.1:18787](http://127.0.0.1:18787). The host port is controlled by `AENIMUS_UI_PORT` and deliberately bound to loopback; the API continues to listen on port 8787 inside the container.
+
+If the browser reports `ERR_SOCKET_NOT_CONNECTED`, recreate the local release and wait for the studio health check:
+
+```bash
+cd /home/hstone/Documents/Codex/Davecode
+docker compose up -d --build --remove-orphans
+docker compose ps
+```
+
+The `studio` row should report `healthy`. All services use `restart: unless-stopped` so they recover after Docker restarts.
+
+Compose explicitly binds the application to `0.0.0.0:8787` inside its container while publishing it only on the host loopback interface. Do not remove that container-side override; binding to `127.0.0.1` inside the container makes the published port unreachable.
+
+Ollama and Qdrant are reachable only on the private Compose network; their service ports are intentionally not published to avoid colliding with existing host installations.
 
 For local development without Docker:
 

@@ -1,10 +1,13 @@
 """AENIMUS configuration v0.1.0."""
+
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="AENIMUS_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="AENIMUS_", env_file=".env", extra="ignore"
+    )
     host: str = "127.0.0.1"
     port: int = 8787
     workspace: Path = Path("workspace")
@@ -17,7 +20,8 @@ class Settings(BaseSettings):
     embedding_model: str = "nomic-embed-text"
     providers_json: str = "{}"
     discord_enabled: bool = False
-    discord_channel_id: int | None = None
+    # Keep disabled connector IDs as strings so an empty environment value is valid.
+    discord_channel_id: str = ""
     discord_allowed_user_ids: str = ""
     discord_command_prefix: str = "!aenimus"
 
